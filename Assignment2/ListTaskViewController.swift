@@ -2,9 +2,12 @@
 //  ViewController.swift
 //  Assignment2
 //
-//  Created by Willian Campos on 2017-01-31.
+//  Created by Willian Campos (300879280) on 2017-01-31.
 //  Copyright © 2017 Camponale. All rights reserved.
 //
+//  This is the controller for the main screen. 
+//  It is responsible for database persistence handling as well.
+//  Done / undone handling is implemented using swipe left on table row.
 
 import UIKit
 
@@ -16,7 +19,8 @@ class ListTaskViewController: UITableViewController, DetailViewControllerDelegat
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+        
+        //Connect to database
         var database:OpaquePointer? = nil
         var result = sqlite3_open(dataFilePath(), &database)
         if result != SQLITE_OK {
@@ -24,6 +28,8 @@ class ListTaskViewController: UITableViewController, DetailViewControllerDelegat
             print("Failed to open database")
             return
         }
+        
+        //Create tasks table in case it does not exist
         let createSQL = "CREATE TABLE IF NOT EXISTS TASKS " +
         "(ROW INTEGER PRIMARY KEY, NAME TEXT, DESCRIPTION TEXT, DONE INTEGER);"
         var errMsg:UnsafeMutablePointer<Int8>? = nil
@@ -34,10 +40,10 @@ class ListTaskViewController: UITableViewController, DetailViewControllerDelegat
             return
         }
         
+        //Populate task table with database tasks
         let query = "SELECT ROW, NAME, DESCRIPTION, DONE FROM TASKS ORDER BY ROW"
         var statement:OpaquePointer? = nil
         if sqlite3_prepare_v2(database, query, -1, &statement, nil) == SQLITE_OK {
-            print("Select run successfully")
             while sqlite3_step(statement) == SQLITE_ROW {
                 let row = Int(sqlite3_column_int(statement, 0))
                 let name = String.init(cString: sqlite3_column_text(statement, 1)!)
@@ -64,6 +70,7 @@ class ListTaskViewController: UITableViewController, DetailViewControllerDelegat
         return url!
     }
     
+    //Invoked when app "lose focus"
     func applicationWillResignActive(notification:NSNotification) {
         var database:OpaquePointer? = nil
         let result = sqlite3_open(dataFilePath(), &database)
@@ -72,6 +79,22 @@ class ListTaskViewController: UITableViewController, DetailViewControllerDelegat
             print("Failed to open database")
             return
         }
+        
+        
+        //Clear database task data
+        let delete = "delete from TASKS;"
+        var deleteStatement:OpaquePointer? = nil
+        if sqlite3_prepare_v2(database, delete, -1, &deleteStatement, nil) == SQLITE_OK {
+        }
+        if sqlite3_step(deleteStatement) != SQLITE_DONE {
+            print("Error delete data")
+            NSLog("Database Error Message : %s", sqlite3_errmsg(database))
+            return
+        }
+        sqlite3_finalize(deleteStatement)
+        
+        
+        //Persist all the tasks in current state
         for i in 0..<data.count  {
             let task = data[i]
             let update = "INSERT OR REPLACE INTO TASKS (ROW, NAME, DESCRIPTION, DONE) " +
@@ -95,6 +118,8 @@ class ListTaskViewController: UITableViewController, DetailViewControllerDelegat
             
             sqlite3_finalize(statement)
         }
+        
+        //Close connection with database
         sqlite3_close(database)
     }
     
@@ -107,6 +132,7 @@ class ListTaskViewController: UITableViewController, DetailViewControllerDelegat
         return data.count
     }
     
+    // Populate task data into table cell
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "TaskCell", for: indexPath) as! TaskCell
         let task = data[indexPath.row]
@@ -116,6 +142,7 @@ class ListTaskViewController: UITableViewController, DetailViewControllerDelegat
     }
     
     
+    // This method is responsible for adding an action for mark task as done/undone once detected a swipe left gesture on row.
     override func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
         let task = data[indexPath.row]
         let actionStr = task.done ? "Undone" : "Done"
@@ -130,21 +157,32 @@ class ListTaskViewController: UITableViewController, DetailViewControllerDelegat
     }
     
     
+    //Invoked before changing to any other screen
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        //Set delegate and task before opening detail screen
         let destination = segue.destination as! DetailViewController
         destination.task = data[tableView.indexPathForSelectedRow!.row]
         destination.delegate = self
     }
     
+    //Action on new task button pressed: create new task with default name and without description
     @IBAction func addTaskPressed(_ sender: UIBarButtonItem) {
         let task = Task(data.count, "New task", false, "")
         data.append(task)
         tableView.reloadData()
     }
     
+    //Refresh table row for task changed
     func taskChanged(task: Task) {
-        let index = data.index(of: task)
         tableView.reloadRows(at: [tableView.indexPathForSelectedRow!], with: UITableViewRowAnimation.fade)
+    }
+    
+    
+    //Remove from table deleted task
+    func taskDeleted(task: Task) {
+        let index = data.index(of: task)
+        data.remove(at: index!)
+        tableView.reloadData()
     }
     
 }

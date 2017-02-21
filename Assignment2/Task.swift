@@ -2,9 +2,10 @@
 //  Task.swift
 //  Assignment2
 //
-//  Created by Willian Campos on 2017-01-31.
+//  Created by Willian Campos (300879280) on 2017-01-31.
 //  Copyright © 2017 Camponale. All rights reserved.
 //
+//  This is the model class for tasks. It represents one task and its properties.
 
 class Task: Equatable {
     

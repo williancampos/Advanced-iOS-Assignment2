@@ -8,6 +8,11 @@
 
 import UIKit
 
+protocol DetailViewControllerDelegate {
+    
+    func taskChanged(task: Task);
+}
+
 class DetailViewController: UIViewController {
     
     
@@ -15,7 +20,7 @@ class DetailViewController: UIViewController {
     @IBOutlet weak var descriptionTextView: UITextView!
     
     
-    
+    var delegate: DetailViewControllerDelegate!
     var task: Task!
     
     override func viewDidLoad() {
@@ -24,6 +29,9 @@ class DetailViewController: UIViewController {
     }
     
     @IBAction func savePressed(_ sender: UIBarButtonItem) {
-        print("save")
+        task.name = nameTextField.text!
+        task.description = descriptionTextView.text!
+        delegate.taskChanged(task: task)
+        navigationController!.popViewController(animated: true)
     }
 }

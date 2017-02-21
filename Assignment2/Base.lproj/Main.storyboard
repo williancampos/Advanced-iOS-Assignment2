@@ -23,7 +23,7 @@
                                 <rect key="frame" x="0.0" y="28" width="375" height="68"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="Jdn-yK-kPi" id="L0c-MK-Q2D">
-                                    <rect key="frame" x="0.0" y="0.0" width="375" height="67"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="67.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Task Name" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UQK-qf-k37" userLabel="Name Label">
@@ -51,7 +51,13 @@
                             <outlet property="delegate" destination="K7r-Tn-T2w" id="7sB-ZE-7pf"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="Task List" id="nDN-wx-pzt"/>
+                    <navigationItem key="navigationItem" title="Task List" id="nDN-wx-pzt">
+                        <barButtonItem key="rightBarButtonItem" systemItem="add" id="vMT-qJ-IC4">
+                            <connections>
+                                <action selector="addTaskPressed:" destination="K7r-Tn-T2w" id="jam-OH-n3v"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="INg-DC-Eq3" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
